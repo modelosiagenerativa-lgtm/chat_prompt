@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat con Gemini - Seguro</title>
+    <style>
+        body { font-family: sans-serif; max-width: 600px; margin: 2rem auto; padding: 0 1rem; }
+        textarea { width: 100%; height: 100px; margin-bottom: 10px; box-sizing: border-box; }
+        button { padding: 10px 20px; cursor: pointer; background-color: #007bff; color: white; border: none; border-radius: 5px;}
+        button:disabled { background-color: #ccc; cursor: not-allowed; }
+        
+        #resultado { margin-top: 20px; background: #f4f4f4; padding: 15px; border-radius: 5px; line-height: 1.6; }
+        #resultado h1, #resultado h2 { margin-top: 1em; color: #333; }
+        #resultado code { background-color: #e0e0e0; padding: 2px 4px; border-radius: 3px; font-family: monospace; }
+        #resultado pre { background-color: #2d2d2d; color: #f8f8f2; padding: 10px; border-radius: 5px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+
+    <h1>Pregúntale a Gemini</h1>
+    <textarea id="prompt" placeholder="Escribe tu pregunta aquí..."></textarea>
+    <button id="btnEnviar">Generar Respuesta</button>
+    <div id="resultado">La respuesta aparecerá aquí...</div>
+
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+    <script>
+      const btn = document.getElementById('btnEnviar');
+      const output = document.getElementById('resultado');
+
+      btn.addEventListener('click', async () => {
+        const prompt = document.getElementById('prompt').value;
+        if (!prompt) return;
+
+        output.innerText = "Pensando (esto puede tardar unos segundos)...";
+        btn.disabled = true;
+
+        try {
+          // LLAMADA SEGURA A TU PROPIO BACKEND
+          const response = await fetch('/api/chat', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ prompt: prompt })
+          });
+
+          const data = await response.json();
+
+          if (data.error) throw new Error(data.error);
+
+          // Renderizar Markdown
+          output.innerHTML = marked.parse(data.message);
+
+        } catch (error) {
+          output.innerText = "Error: " + error.message;
+        } finally {
+          btn.disabled = false;
+        }
+      });
+    </script>
+</body>
+</html>
